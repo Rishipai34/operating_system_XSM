@@ -1,0 +1,20 @@
+0
+2056
+0
+0
+0
+0
+0
+0
+mov R0,1
+mov R2,5
+ge R2, R0
+jz R2, 2078
+mov R1, R0
+mov R3, R0
+mul R1, R0
+mul R3, R1
+brkp
+add R0, 1
+jmp 2058
+int 10
