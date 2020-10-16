@@ -7,34 +7,22 @@
 0
 0
 MOV R0, 1
-brkp
 MOV R2, 20
 GE R2, R0
-brkp
-JZ R2, 2134
-brkp
+JZ R2, 2108
 MOV R1, R0
-brkp
-NOP
-brkp
 PUSH R0
-brkp
 PUSH R1
-brkp
 PUSH R2
-brkp
 MOV R0, 5
-brkp
 MOV R2, -2
 PUSH R0
 PUSH R2
 PUSH R1
 PUSH R0
 PUSH R0
-brkp
 INT 7
 POP R1
-brkp
 POP R1
 POP R1
 POP R1
@@ -43,6 +31,5 @@ POP R2
 POP R1
 POP R0
 ADD R0, 1
-brkp
-JMP 2060
+JMP 2058
 INT 10
