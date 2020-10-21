@@ -1,0 +1,21 @@
+type
+  student{
+  str name ;
+  int marks;
+  }
+  endtype
+int main(){
+  decl
+    student newstudent;
+    int h, temp;
+  enddecl
+  begin
+    h = initialize();
+    newstudent = alloc();
+    newstudent.name = "John";
+    newstudent.marks = 89;
+    temp = exposcall("Write", -2, newstudent.name);
+    temp = exposcall("Write", -2, newstudent.marks);
+    return 0;
+  end
+  }
