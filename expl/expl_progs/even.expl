@@ -1,0 +1,13 @@
+int main(){
+    decl 
+        int even, temp ; 
+    enddecl
+    begin 
+        even = 2;
+        while (even <= 100 )do 
+            temp = exposcall("Write", -2, even );
+            even = even + 2;
+        endwhile;
+        return 0;
+    end 
+}

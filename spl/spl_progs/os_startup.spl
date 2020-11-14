@@ -2,11 +2,17 @@
 loadi(54,67);
 loadi(55,68);
 
-// set the page table values and the values of sp 
-SP  = [PROCESS_TABLE + 11] * 512 - 1;
+// the idle program
+loadi(69,11);
+loadi(70,12);
+breakpoint;
 call BOOT_MODULE;
+breakpoint;
+// set the page table values and the values of sp 
+SP  = 82 * 512 - 1;
 // set the page table values of idle process
 PTBR = PAGE_TABLE_BASE;
+PTLR = 10;
 
 //Library
 [PTBR+0] = 63;
@@ -33,7 +39,7 @@ PTBR = PAGE_TABLE_BASE;
 [PTBR+18] = -1;
 [PTBR+19] = "0000";
 
-/
+
 
 // for idle process
 [PROCESS_TABLE + 11] = 82;
