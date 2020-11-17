@@ -1,7 +1,6 @@
 [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1] * 16) + 13] = SP;
 SP = [PROCESS_TABLE + ([SYSTEM_STATUS_TABLE + 1 ] * 16 ) + 11 ] * 512 - 1;
 backup;
-
 alias currentPID R0;
 currentPID = [SYSTEM_STATUS_TABLE + 1];
 alias process_table_entry R1;
@@ -12,16 +11,13 @@ changestate = 0;
 while (changestate < 16 ) do 
     [PROCESS_TABLE + changestate * 16] = [PROCESS_TABLE + changestate * 16] + 1; 
     changestate = changestate + 1; 
-endwhile; 
-breakpoint; 
+endwhile;  
 call MOD_5;
+restore;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13];
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1 ]* 16 + 9] = 0;
 breakpoint;
-
-restore ;
-alias newprocess R3;
-newprocess = [SYSTEM_STATUS_TABLE + 1];
-SP = [PROCESS_TABLE + newprocess * 16 + 13];
-[PROCESS_TABLE + newprocess * 16 + 9] = 0;
 ireturn ;
+
  
 

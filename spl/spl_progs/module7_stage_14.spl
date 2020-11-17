@@ -16,12 +16,11 @@ loadi(64,14);
 // the timer interrupt
 loadi(4, 17);
 loadi(5, 18);
- // the executable program for stage 14
- loadi(90,69);
- // the module 5
- loadi(50,63);
- loadi(51,64);
-
+// the executable program for stage 14
+loadi(83,69);
+// the module 5
+loadi(50,63);
+loadi(51,64);
 // set page table values for init program
 PTBR =PAGE_TABLE_BASE + 20;
 
@@ -66,7 +65,7 @@ PTBR =PAGE_TABLE_BASE + 40;
 //Code
 [PTBR+8]  = 83;
 [PTBR+9]  = "0100";
-[PTBR+10] = -1;
+[PTBR+10] = 84;
 [PTBR+11] = "0100";
 [PTBR+12] = -1;
 [PTBR+13] = "0000";
@@ -95,8 +94,7 @@ PTBR =PAGE_TABLE_BASE + 40;
 [PROCESS_TABLE + 32 + 12] = 0;
 [PROCESS_TABLE + 32 + 14] = PAGE_TABLE_BASE + 40;
 [PROCESS_TABLE + 32 + 15] = 10;
-[96 * 512] = [90 * 512 + 1];
-
+[87 * 512] = [83 * 512 + 1];
 alias next R0; 
 next = 3;
 while (next < 16) do 

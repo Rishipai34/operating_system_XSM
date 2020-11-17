@@ -5,9 +5,7 @@ loadi(55,68);
 // the idle program
 loadi(69,11);
 loadi(70,12);
-breakpoint;
 call BOOT_MODULE;
-breakpoint;
 // set the page table values and the values of sp 
 SP  = 82 * 512 - 1;
 // set the page table values of idle process
