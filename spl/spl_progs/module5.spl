@@ -1,0 +1,37 @@
+multipush(BP);
+alias currentPID R0;
+currentPID = [SYSTEM_STATUS_TABLE + 1];
+alias process_table_entry R7;
+process_table_entry = PROCESS_TABLE + currentPID * 16;
+[process_table_entry + 12] = SP % 512;
+[process_table_entry + 14] = PAGE_TABLE_BASE + currentPID * 20;
+[process_table_entry + 15] = 10;
+alias iterator R1;
+alias newPID R3;
+newPID = currentPID + 1;
+iterator = 0;
+while ((iterator + newPID < 16) && ([PROCESS_TABLE + (newPID + iterator) * 16 + 4] == TERMINATED)) do
+    iterator = iterator + 1; 
+endwhile;
+if ((iterator + newPID) == 16) then 
+        newPID = 0; 
+else 
+    newPID = newPID + iterator;
+endif;
+alias newprocess R5; 
+newprocess = PROCESS_TABLE + newPID * 16;
+SP = [newprocess + 11] * 512 + [newprocess + 12];
+PTBR = [newprocess + 14];
+PTLR = [newprocess + 15]; 
+[SYSTEM_STATUS_TABLE + 1] = newPID;
+if ([newprocess + 4] == CREATED) then 
+    SP = [newprocess + 13]; 
+    [newprocess + 4] = RUNNING;
+    [newprocess + 9] = 0; 
+    ireturn; 
+endif; 
+[newprocess + 4] = RUNNING; 
+multipop(BP);
+return; 
+
+
