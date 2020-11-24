@@ -3,8 +3,96 @@ userSP = SP;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
-alias filedescriptor R1;
-alias filedescriptoradd R2;
-filedescriptoradd = [PTBR + 2 * ((userSP - 1)/512)] * 512 + (userSP -1)%512;
-filedescriptoradd = [filedescriptoradd];
+alias filename R1;
+filename = [[PTBR + 2 * ((userSP - 1)/512)] * 512 + (userSP -1)%512];
+alias filesearch R2;
+filesearch = 0;
+while(filesearch <= 59) do 
+    if (([INODE_TABLE + filesearch*16 + 1] == filename) && ([INODE_TABLE + filesearch*16 ] == EXEC)) then 
+        break ;
+    else 
+        filesearch = filesearch + 1;
+    endif;
+endwhile;
+
+// if file is not found then 
+if (filesearch == 60 ) then 
+    [[PTBR + 2 * ((userSP - 1)/512)] * 512 + (userSP - 1) % 512] = -1;
+    SP = userSP;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    ireturn;
+endif;
+
+multipush(R2);
+R1 = 3;
+R2 = [SYSTEM_STATUS_TABLE + 1];
+call MOD_1;
+multipop(R2);
+alias userAreaPage R4;
+userAreaPage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+[MEMORY_FREE_LIST + userAreaPage] = [MEMORY_FREE_LIST + userAreaPage] + 1;
+[SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+SP = userAreaPage * 512 - 1;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = RUNNING;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] = filesearch;
+PTBR = [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]* 20];
+
+//library
+[PTBR + 0] = 63;
+[PTBR + 1] = "0100";
+[PTBR + 2] = 64;
+[PTBR + 3] = "0100";
+
+// stack (call function number 1 in memory manager module)
+multipush(R2, R4);
+R1 = 1;
+call MOD_2;
+[PTBR + 16] = R0;
+[PTBR + 17] = "0110";
+call MOD_2;
+[PTBR + 19] = R0;
+[PTBR + 20] = "0110";
+
+//heap -- same as stack 
+R1 = 1;
+call MOD_2;
+[PTBR + 4] = R0;
+[PTBR + 5] = "0110";
+call MOD_2;
+[PTBR + 6] = R0;
+[PTBR + 7] = "0110";
+
+multipop(R2, R4);
+
+alias counter R5;
+alias blocks R6;
+alias diskpageblock R9;
+counter = 8;
+blocks = [INODE_TABLE + filesearch * 16 + 2]/512 + 1;
+diskpageblock = 8; // since INODE_TABLE + 8 corresponds to the location of the code blocks
+
+while (blocks != 0 ) do 
+    multipush(R2, R4, R5, R6, R9);
+    R1 = 1;
+    call MOD_2;
+    multipop(R2, R4, R5, R6, R9);
+    loadi(R0, [INODE_TABLE + filesearch * 16 + diskpageblock]);
+    [PTBR + counter] = R0;
+    [PTBR + counter + 1] = "0100";
+    diskpageblock = diskpageblock + 1;
+    counter = counter + 1;
+    blocks = blocks - 1;
+endwhile;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = [8 * 512];
+[[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+
+SP = 8 *512;
+PTLR = 10;
+PTBR = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 +14];
+ireturn;
+
+
 

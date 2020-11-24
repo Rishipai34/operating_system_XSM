@@ -4,9 +4,15 @@ loadi(66,8);
 // the interrupt routine 10
 loadi(22,35);
 loadi(23,36);
+// the interrupt 6
+loadi(14,27);
+loadi(15,28);
 // the interrupt 7
 loadi(16,29);
 loadi(17,30);
+// the interrupt 9
+loadi(20, 33);
+loadi(21, 34);
 // the exeption handler
 loadi(2,15);
 loadi(3,16);
@@ -25,9 +31,12 @@ loadi(41,54);
 // the module 4
 loadi(48,61);
 loadi(49,62);
-// the read interrupt routine 
-loadi(14,27);
-loadi(15,28);
+// the module 1
+loadi(42,55);
+loadi(43,56);
+// the module 2
+loadi(44,57);
+loadi(45,58);
 // the console interrupt 
 loadi(8,21);
 loadi(9,22);

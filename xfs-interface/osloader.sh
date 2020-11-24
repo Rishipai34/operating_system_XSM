@@ -10,3 +10,7 @@
 ./xfs-interface load --module 4 $HOME/myexpos/spl/spl_progs/module4.xsm
 ./xfs-interface load --int=6 $HOME/myexpos/spl/spl_progs/interrupt6.xsm
 ./xfs-interface load --int=console $HOME/myexpos/spl/spl_progs/console_interrupt.xsm
+./xfs-interface load --int=9 $HOME/myexpos/spl/spl_progs/interrupt9.xsm
+./xfs-interface load --module 1 $HOME/myexpos/spl/spl_progs/module1.xsm
+./xfs-interface load --module 2 $HOME/myexpos/spl/spl_progs/module2.xsm
+

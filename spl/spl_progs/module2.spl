@@ -1,0 +1,39 @@
+// function number = 2 implies release page 
+// function number = 1 implies get free page \
+alias functionNum R1;
+alias passedPID R2;
+if (functionNum == 1) then 
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
+    while([SYSTEM_STATUS_TABLE + 2] == 0) do 
+        [PROCESS_TABLE + passedPID * 16 + 4] = WAIT_MEM;
+        multipush(R1, R2);
+        call MOD_5;
+        multipop(R1, R2);
+    endwhile;
+    [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
+    [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
+    alias counter R3;
+    while([MEMORY_FREE_LIST + counter] != 0) do 
+        counter = counter + 1;
+    endwhile;
+    [MEMORY_FREE_LIST + counter] = 1;
+    R0 = counter; // page number of the freed page 
+    return ;
+endif;
+
+if ( functionNum == 1) then 
+    [MEMORY_FREE_LIST + R2] = [MEMORY_FREE_LIST + R2] - 1;
+    if ([MEMORY_FREE_LIST + R2] == 0) then 
+        [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
+    endif;
+    alias counter R3;
+    counter = 0;
+    while(counter <= 15 ) do 
+        if ([PROCESS_TABLE + counter * 16 + 4] == WAIT_MEM ) then 
+            [PROCESS_TABLE + counter * 16 + 4] = READY;
+        endif;
+        counter = counter + 1;
+    endwhile;
+    return;
+endif;
+

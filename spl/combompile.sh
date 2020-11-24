@@ -8,3 +8,6 @@
 ./spl $HOME/myexpos/spl/spl_progs/module4.spl
 ./spl $HOME/myexpos/spl/spl_progs/interrupt6.spl
 ./spl $HOME/myexpos/spl/spl_progs/console_interrupt.spl
+./spl $HOME/myexpos/spl/spl_progs/interrupt9.spl
+./spl $HOME/myexpos/spl/spl_progs/module1.spl
+./spl $HOME/myexpos/spl/spl_progs/module2.spl
