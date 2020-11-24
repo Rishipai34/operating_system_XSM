@@ -6,4 +6,5 @@
 ./spl $HOME/myexpos/spl/spl_progs/interrupt7.spl
 ./spl $HOME/myexpos/spl/spl_progs/module0.spl
 ./spl $HOME/myexpos/spl/spl_progs/module4.spl
-
+./spl $HOME/myexpos/spl/spl_progs/interrupt6.spl
+./spl $HOME/myexpos/spl/spl_progs/console_interrupt.spl
