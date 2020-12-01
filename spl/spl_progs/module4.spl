@@ -1,31 +1,52 @@
+// device manager module 
+// function number = 3 -> terminal write 
+// function number = 4 -> terminal reads
+// function number = 1 -> disk store
+// function number = 2 -> dist load 
 alias functionNum R1;
 alias currentPID R2;
 alias physical_address R5;
+alias blockNum R3;
+alias pageNum R4;
+if (functionNum == 2) then 
+    multipush(R1, R2, R3, R4, R5);
+    functionNum = 3 ;
+    call MOD_0;
+    multipop(R1, R2, R3, R4, R5);
+    [DISK_STATUS_TABLE + 1] = 0;
+    [DISK_STATUS_TABLE + 2] = pageNum ;
+    [DISK_STATUS_TABLE + 3] = blockNum;
+    [DISK_STATUS_TABLE + 4] = currentPID;
+    load(pageNum, blockNum);
+    [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_DISK;
+    multipush(R1, R2, R3, R4, R5, R6);
+    call MOD_5;
+    multipop(R1, R2, R3, R4, R5, R6);
+    return ;
+endif;
+
 if(functionNum == 3) then 
     multipush(R1, R2, R3);
     functionNum = 8;
     currentPID = [SYSTEM_STATUS_TABLE + 1];
     call MOD_0;
     multipop(R1, R2, R3); 
-    breakpoint;
     print(R3);
-    breakpoint;
     multipush(R1, R2, R3);
     functionNum = 9;
     currentPID = [SYSTEM_STATUS_TABLE + 1];
     call MOD_0;
     multipop(R1, R2, R3);
     return;
-endif; 
+endif;
+
 if(functionNum == 4) then
     multipush(R1, R2,R3); 
     R1 = 8;
     R2 = [SYSTEM_STATUS_TABLE + 1];
     call MOD_0;
     multipop(R1, R2, R3);
-    breakpoint;
     read;
-    breakpoint;
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_TERMINAL;
     multipush(R1, R2, R3);
     call MOD_5;

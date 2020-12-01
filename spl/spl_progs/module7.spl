@@ -40,6 +40,12 @@ loadi(45,58);
 // the console interrupt 
 loadi(8,21);
 loadi(9,22);
+// disk interrupt
+loadi(6, 19);
+loadi(7, 20);
+// the inode table 
+loadi(59,3);
+loadi(60,4);
 
 
 // set page table values for init program
@@ -86,6 +92,29 @@ while (next < 16) do
     [PROCESS_TABLE + next * 16 + 4] = TERMINATED ;
     next = next + 1;
 endwhile;
+
+alias resource_intitialize R10;
+resource_intitialize = 0;
+while(resource_intitialize <= 8) do 
+    [[PROCESS_TABLE + 16 + 11] * 512 + 496 + resource_intitialize] = 0;
+    resource_intitialize = resource_intitialize + 2;
+endwhile;
+
+next = 0;
+while(next <= 82) do 
+    [MEMORY_FREE_LIST + next] = 1;
+    next = next + 1;
+endwhile;
+
+while (next <= 127) do 
+    [MEMORY_FREE_LIST + next] = 0;
+    next = next + 1;
+endwhile;
+
+[SYSTEM_STATUS_TABLE + 2] = 45;
+[SYSTEM_STATUS_TABLE + 3] = 0;
+[DISK_STATUS_TABLE] = 0;
+
 [TERMINAL_STATUS_TABLE] = 0;
 return;
 

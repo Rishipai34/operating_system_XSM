@@ -4,20 +4,19 @@ userSP = SP;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 9;
 alias filename R1;
-filename = [[PTBR + 2 * ((userSP - 1)/512)] * 512 + (userSP -1)%512];
+filename = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] *20 + 2 * ((userSP - 4)/512)] * 512 + (userSP - 4)%512];
 alias filesearch R2;
-filesearch = 0;
+filesearch = 1;
 while(filesearch <= 59) do 
     if (([INODE_TABLE + filesearch*16 + 1] == filename) && ([INODE_TABLE + filesearch*16 ] == EXEC)) then 
         break ;
-    else 
-        filesearch = filesearch + 1;
     endif;
+        filesearch = filesearch + 1;
 endwhile;
 
 // if file is not found then 
 if (filesearch == 60 ) then 
-    [[PTBR + 2 * ((userSP - 1)/512)] * 512 + (userSP - 1) % 512] = -1;
+    [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * ((userSP - 1)/512)] * 512 + (userSP - 1) % 512] = -1;
     SP = userSP;
     [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
     ireturn;
@@ -35,7 +34,7 @@ userAreaPage = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
 SP = userAreaPage * 512 - 1;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = RUNNING;
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 7] = filesearch;
-PTBR = [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]* 20];
+PTBR = PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]* 20;
 
 //library
 [PTBR + 0] = 63;
@@ -43,27 +42,25 @@ PTBR = [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1]* 20];
 [PTBR + 2] = 64;
 [PTBR + 3] = "0100";
 
-// stack (call function number 1 in memory manager module)
+// stack 
 multipush(R2, R4);
 R1 = 1;
+R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_2;
 [PTBR + 16] = R0;
 [PTBR + 17] = "0110";
+R1 = 1;
+R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_2;
-[PTBR + 19] = R0;
-[PTBR + 20] = "0110";
+[PTBR + 18] = R0;
+[PTBR + 19] = "0110";
 
 //heap -- same as stack 
-R1 = 1;
-call MOD_2;
-[PTBR + 4] = R0;
-[PTBR + 5] = "0110";
-call MOD_2;
-[PTBR + 6] = R0;
-[PTBR + 7] = "0110";
-
+[PTBR + 4] = -1;
+[PTBR + 5] = "0000";
+[PTBR + 6] = -1;
+[PTBR + 7] = "0000";
 multipop(R2, R4);
-
 alias counter R5;
 alias blocks R6;
 alias diskpageblock R9;
@@ -72,17 +69,32 @@ blocks = [INODE_TABLE + filesearch * 16 + 2]/512 + 1;
 diskpageblock = 8; // since INODE_TABLE + 8 corresponds to the location of the code blocks
 
 while (blocks != 0 ) do 
-    multipush(R2, R4, R5, R6, R9);
+    multipush(R0, R2, R4, R5, R6, R9);
     R1 = 1;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
     call MOD_2;
-    multipop(R2, R4, R5, R6, R9);
-    loadi(R0, [INODE_TABLE + filesearch * 16 + diskpageblock]);
+    multipop(R0, R2, R4, R5, R6, R9);
+    multipush(R0, R2, R4, R5, R6, R9);
+    R1 = 2;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    R3 = [INODE_TABLE + filesearch * 16 + diskpageblock];
+    R4 = R0;
+    call MOD_4;
+    multipop(R0, R2, R4, R5, R6, R9);
     [PTBR + counter] = R0;
     [PTBR + counter + 1] = "0100";
     diskpageblock = diskpageblock + 1;
     counter = counter + 1;
     blocks = blocks - 1;
 endwhile;
+
+alias resource_intitialize R10;
+resource_intitialize = 0;
+while(resource_intitialize <= 16) do 
+    [userAreaPage * 512 + 496 + resource_intitialize] = 0;
+    resource_intitialize = resource_intitialize + 2;
+endwhile;
+
 
 [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = [8 * 512];
 [[PTBR + 16] * 512] = [[PTBR + 8] * 512 + 1];

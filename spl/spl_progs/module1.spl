@@ -1,3 +1,4 @@
+// process manager module ;
 // function number 2 = free user area page
 // function number 4 = free page table 
 // function number 3 = exit process 
@@ -6,7 +7,7 @@ alias passedPID R2;
 if (functionNum == 2) then
     multipush(R1, R2);
     R1 = 2;
-    R2 = [PROCESS_TABLE + passedPID * 16 + 11];
+    R2 = passedPID;
     call MOD_2;
     multipop(R1, R2);
     return ;
@@ -21,6 +22,7 @@ if (functionNum == 3) then
     call MOD_1;
     multipop(R1, R2);
     [PROCESS_TABLE + passedPID * 16 + 4] = TERMINATED;
+    return;
 endif;
 
 if (functionNum == 4) then 
@@ -37,9 +39,9 @@ if (functionNum == 4) then
             R1 = 2;
             R2 = [PTBR + counter];
             call MOD_2; 
+            multipop(R1, R2, R3);
             [PTBR + counter] = -1;
             [PTBR + counter + 1] = "0000";
-            multipop(R1, R2, R3);
         endif;
         counter = counter + 2;
     endwhile;

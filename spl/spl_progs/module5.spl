@@ -1,4 +1,3 @@
-breakpoint;
 alias currentPID R0;
 currentPID = [SYSTEM_STATUS_TABLE + 1];
 multipush(BP);
@@ -33,7 +32,6 @@ if ([newprocess + 4] == CREATED) then
 endif; 
 [newprocess + 4] = RUNNING; 
 multipop(BP);
-breakpoint;
 return; 
 
 

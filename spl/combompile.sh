@@ -11,3 +11,4 @@
 ./spl $HOME/myexpos/spl/spl_progs/interrupt9.spl
 ./spl $HOME/myexpos/spl/spl_progs/module1.spl
 ./spl $HOME/myexpos/spl/spl_progs/module2.spl
+./spl $HOME/myexpos/spl/spl_progs/disk_interrupt.spl
