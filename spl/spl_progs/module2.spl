@@ -1,15 +1,17 @@
 //memory manager module 
 // function number = 2 implies release page 
 // function number = 1 implies get free page
+// function number = 5 implies get code page 
+// function number = 4 implies release block 
 alias functionNum R1;
-alias passedPID R2;
 if (functionNum == 1) then 
+    alias passedPID R2;
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] + 1;
     while([SYSTEM_STATUS_TABLE + 2] == 0) do 
         [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 4] = WAIT_MEM;
-        multipush(R1, R2);
+        multipush(R1);
         call MOD_5;
-        multipop(R1, R2);
+        multipop(R1);
     endwhile;
     [SYSTEM_STATUS_TABLE + 3] = [SYSTEM_STATUS_TABLE + 3] - 1;
     [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] - 1;
@@ -20,11 +22,11 @@ if (functionNum == 1) then
     endwhile;
     [MEMORY_FREE_LIST + counter] = 1;
     // page number of the freed page 
-    breakpoint;
     return ;
 endif;
 
 if ( functionNum == 2) then
+    alias pagenum R2;
     [MEMORY_FREE_LIST + R2] = [MEMORY_FREE_LIST + R2] - 1;
     if ([MEMORY_FREE_LIST + R2] == 0) then 
         [SYSTEM_STATUS_TABLE + 2] = [SYSTEM_STATUS_TABLE + 2] + 1;
@@ -39,4 +41,58 @@ if ( functionNum == 2) then
     endwhile;
     return;
 endif;
+
+if (functionNum == 4) then
+    alias blocknum R2;
+    alias passedPID R3;
+    [DISK_FREE_LIST + R2] = [DISK_FREE_LIST + R2] - 1;
+    return;
+endif;
+
+if (functionNum == 5) then 
+    alias blocknum R2; // the passed value of the block number 
+    //check the disk map table entries of all processes 
+    alias diskmapentry R8;
+    diskmapentry = 4;
+    alias processnum R5;
+    processnum = 0;
+    alias entryfound R0; //memory page number of the entry found or the block number of the required code block 
+    entryfound = -1;
+    alias copier R9;
+    
+    while(processnum <= 15) do 
+        diskmapentry = 4;
+        while(diskmapentry <= 7) do 
+            if(([DISK_MAP_TABLE + processnum * 10 + diskmapentry] == blocknum) && ([PAGE_TABLE_BASE + processnum * 20 + diskmapentry * 2] != -1)) then 
+                entryfound = [PAGE_TABLE_BASE + processnum * 20 + diskmapentry * 2];
+                [MEMORY_FREE_LIST + entryfound] = [MEMORY_FREE_LIST + entryfound] + 1;
+                return;
+            endif;
+            diskmapentry = diskmapentry + 1;
+        endwhile;
+        processnum = processnum + 1;
+    endwhile;
+    if(entryfound == -1) then 
+        multipush(R0, R1, R2, R3, R4, R5, R6);
+        R1 = 1;
+        R2 = [SYSTEM_STATUS_TABLE + 1] ;
+        call MOD_2;
+        R9 = R0;
+        multipop(R0, R1, R2, R3, R4, R5, R6);
+        multipush(R0, R1, R2, R3, R4, R5, R6);
+        R4 = R9;
+        R1 = 2;
+        R3 = R2; //blocknumber 
+        R2 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_4;
+        R9 = R0;
+        multipop(R0, R1, R2, R3, R4, R5, R6);
+    endif;
+    R0 = R9;
+    return;
+endif;
+
+
+
+
 

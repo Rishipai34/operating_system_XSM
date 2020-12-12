@@ -14,4 +14,4 @@
 ./xfs-interface load --int=9 $HOME/myexpos/spl/spl_progs/interrupt9.xsm
 ./xfs-interface load --module 1 $HOME/myexpos/spl/spl_progs/module1.xsm
 ./xfs-interface load --module 2 $HOME/myexpos/spl/spl_progs/module2.xsm
-
+./xfs-interface load --exhandler $HOME/myexpos/spl/spl_progs/exeption_handler.xsm

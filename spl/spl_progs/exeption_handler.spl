@@ -1,0 +1,49 @@
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = -1; 
+backup;
+alias userSP R0;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11] * 512 - 1;
+multipush(EIP);
+if ((EC != 0) || (userSP >= (512 * PTLR - 1))) then 
+    print("error");
+    print(EC);
+    multipush(R0);
+    R1 = 3;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_1;
+    multipop(R0);
+    call MOD_5;
+endif;
+// heap page 
+if((EPN== 2) || (EPN == 3)) then 
+    multipush(R0, EPN, EIP);
+    R1 = 1;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_2;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2] = R0;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 1] = "1110";
+    R1 = 1;
+    R2 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_2;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 2] = R0;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 3] = "1110";
+    multipop(R0, EPN, EIP);
+endif;
+
+// code page 
+if((EPN >= 4) && (EPN <= 7)) then 
+    multipush(R0, EPN, EIP);
+    R1 = 5;
+    R2 = [DISK_MAP_TABLE + 10 * [SYSTEM_STATUS_TABLE +1] + EPN];
+    call MOD_2;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2] = R0;
+    [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 1] = "1100";
+    multipop(R0, EPN, EIP);
+endif;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
+multipop(EIP);
+restore;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13];
+SP = SP + 1;
+[[PTBR + 2*(SP/512)]*512 + SP%512] = EIP; // set the valuee of the address to which stack pointer is to return to 
+ireturn;
