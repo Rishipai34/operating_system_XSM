@@ -33,8 +33,7 @@ if (functionNum == 4) then
     [PTBR + 3] = "0000";
     alias counter R3;
     counter = 4;
-    // invalidate the page table entries of the process 
-    while (counter < 20) do 
+    while (counter <= 18) do 
         if ([PTBR + counter] != -1) then 
             multipush(R1, R2, R3);
             R1 = 2;
@@ -46,43 +45,40 @@ if (functionNum == 4) then
         endif;
         counter = counter + 2;
     endwhile;
-    // check for any temporary allocations of pages for stack or heap 
-    if([DISK_MAP_TABLE + passedPID * 10 + 2] != -1) then 
-        multipush(R1, R2, R3);
+
+    if ([DISK_MAP_TABLE + passedPID * 10 + 2] != -1) then 
+        multipush(R2, R3); 
         R1 = 4;
-        R3 = passedPID ;
-        R2 = [DISK_MAP_TABLE + passedPID * 10 +2];
-        call MOD_4;
-        multipop(R1, R2, R3);
-    endif;
-    if([DISK_MAP_TABLE + passedPID * 10 + 3] != -1) then 
-        multipush(R1, R2, R3);
-        R1 = 4;
-        R3 = passedPID ;
-        R2 = [DISK_MAP_TABLE + passedPID * 10 + 3];
-        call MOD_4;
-        multipop(R1, R2, R3);
+        R2 = [DISK_MAP_TABLE + passedPID * 10 + 2]; 
+        call MOD_2;
+        multipop(R2, R3);
     endif;
 
-    // checking temporary allocations for heap 
-    if([DISK_MAP_TABLE + passedPID * 10 + 8] != -1) then 
-        multipush(R1, R2, R3);
+    if ([DISK_MAP_TABLE + passedPID * 10 + 3] != -1) then 
+        multipush(R2, R3); 
         R1 = 4;
-        R3 = passedPID ;
-        R2 = [DISK_MAP_TABLE + passedPID * 10 + 8];
-        call MOD_4;
-        multipop(R1, R2, R3);
-    endif;
-    if([DISK_MAP_TABLE + passedPID * 10 + 9] != -1) then 
-        multipush(R1, R2, R3);
-        R1 = 4;
-        R3 = passedPID ;
-        R2 = [DISK_MAP_TABLE + passedPID * 10 + 9];
-        call MOD_4;
-        multipop(R1, R2, R3);
-    endif;
+        R2 = [DISK_MAP_TABLE + passedPID * 10 + 3]; 
+        call MOD_2;
+        multipop(R2, R3);
+    endif; 
 
-    counter = 0;
+    if ([DISK_MAP_TABLE + passedPID * 10 + 8] != -1) then 
+        multipush(R2, R3); 
+        R1 = 4;
+        R2 = [DISK_MAP_TABLE + passedPID * 10 + 8]; 
+        call MOD_2;
+        multipop(R2, R3);
+    endif; 
+
+    if ([DISK_MAP_TABLE + passedPID * 10 + 9] != -1) then 
+        multipush(R2, R3); 
+        R1 = 4;
+        R2 = [DISK_MAP_TABLE + passedPID * 10 + 9]; 
+        call MOD_2;
+        multipop(R2, R3);
+    endif; 
+
+    counter = 0; 
     while (counter < 10) do 
         [DISK_MAP_TABLE + passedPID * 10 + counter] = -1;
         counter = counter + 1;

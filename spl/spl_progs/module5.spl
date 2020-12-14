@@ -10,14 +10,15 @@ alias iterator R2;
 alias newPID R3;
 newPID = currentPID + 1;
 iterator = 0;
-while ((iterator + newPID < 16) && ([PROCESS_TABLE + ((newPID + iterator)*16) + 4] != READY) && ([PROCESS_TABLE + ((newPID+iterator)*16) + 4] != CREATED)) do
-    iterator = iterator + 1; 
+while((iterator <= 16) && ([PROCESS_TABLE + (newPID*16) + 4] != READY) && ([PROCESS_TABLE + (newPID*16) + 4] != CREATED)) do
+	newPID = ((newPID + 1)%16); // loop back to zero when the end of the table is reached
+	iterator = iterator + 1;
 endwhile;
-if ((iterator + newPID) == 16) then 
-        newPID = 0; 
-else 
-    newPID = newPID + iterator;
+
+if (iterator == 17) then 
+    newPID = 0;
 endif;
+
 alias newprocess R4; 
 newprocess = PROCESS_TABLE + newPID * 16;
 SP = [newprocess + 11] * 512 + [newprocess + 12];
