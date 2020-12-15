@@ -1,9 +1,28 @@
 // process manager module ;
+// function number 1 = get pcb 
 // function number 2 = free user area page
 // function number 4 = free page table 
 // function number 3 = exit process 
 alias functionNum R1;
 alias passedPID R2;
+
+if (functionNum == 1) then 
+    alias counter R3;
+    while (counter < 16) do 
+        if([PROCESS_TABLE + counter * 16 + 11] == TERMINATED) then 
+            [PROCESS_TABLE + counter * 16 + 1] = 1;
+            [PROCESS_TABLE + counter * 16 + 4] = ALLOCATED;
+            [PROCESS_TABLE + counter * 16 + 14] = [PAGE_TABLE_BASE + counter * 20 ];
+            [PROCESS_TABLE + counter * 16 + 15] = 10;
+            R0 = counter;
+            return;
+        endif;
+        counter = counter + 1;
+    endwhile;
+    R0 = -1;
+    return;
+endif;
+
 if (functionNum == 2) then
     multipush(R1, R2);
     R1 = 2;

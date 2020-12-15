@@ -28,3 +28,6 @@ echo 14
 ./spl $HOME/myexpos/spl/spl_progs/disk_interrupt.spl
 echo 15
 ./spl $HOME/myexpos/spl/spl_progs/exeption_handler.spl
+echo 16
+./spl $HOME/myexpos/spl/spl_progs/interrupt8.spl
+

@@ -26,6 +26,7 @@ PTBR = [newprocess + 14];
 PTLR = [newprocess + 15]; 
 [SYSTEM_STATUS_TABLE + 1] = newPID;
 if ([newprocess + 4] == CREATED) then 
+    BP = [[newprocess + 11] * 512];
     SP = [newprocess + 13]; 
     [newprocess + 4] = RUNNING;
     [newprocess + 9] = 0; 
