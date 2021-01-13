@@ -74,7 +74,6 @@ if (functionNum == 5) then
         R1 = 2;
         call MOD_4;
         multipop(R0, R2, R3, R4);
-        breakpoint;
         return;
     endif;
 endif;

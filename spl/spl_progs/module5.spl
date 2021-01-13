@@ -1,4 +1,4 @@
-alias currentPID R0;
+alias currentPID R5;
 currentPID = [SYSTEM_STATUS_TABLE + 1];
 multipush(BP);
 alias process_table_entry R1;
@@ -9,7 +9,7 @@ process_table_entry = PROCESS_TABLE + currentPID * 16;
 alias iterator R2;
 alias newPID R3;
 newPID = currentPID + 1;
-iterator = 0;
+iterator = 1;
 while((iterator <= 16) && ([PROCESS_TABLE + (newPID*16) + 4] != READY) && ([PROCESS_TABLE + (newPID*16) + 4] != CREATED)) do
 	newPID = ((newPID + 1)%16); // loop back to zero when the end of the table is reached
 	iterator = iterator + 1;

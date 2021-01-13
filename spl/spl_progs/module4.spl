@@ -23,7 +23,7 @@ if (functionNum == 2) then
     multipush(R0, R1, R2, R3, R4, R5, R6);
     call MOD_5;
     multipop(R0, R1, R2, R3, R4, R5, R6);
-    breakpoint;
+
     return ;
 endif;
 
@@ -53,7 +53,7 @@ if(functionNum == 4) then
     multipush(R0, R1, R2, R3);
     call MOD_5;
     multipop(R0, R1, R2, R3);
-    physical_address = [PTBR + 2 * (R3/512)] * 512 + (R3 % 512);
+    physical_address = [PAGE_TABLE_BASE + currentPID * 20 + 2 * (R3/512)] * 512 + (R3 % 512);
     [physical_address] = [PROCESS_TABLE + currentPID * 16 + 8];
     return;
 endif;

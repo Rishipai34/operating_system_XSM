@@ -30,4 +30,9 @@ echo 15
 ./spl $HOME/myexpos/spl/spl_progs/exeption_handler.spl
 echo 16
 ./spl $HOME/myexpos/spl/spl_progs/interrupt8.spl
+echo 17
+./spl $HOME/myexpos/spl/spl_progs/interrupt11.spl
+echo 18
+./spl $HOME/myexpos/spl/spl_progs/interrupt15.spl
+
 

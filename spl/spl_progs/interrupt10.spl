@@ -6,3 +6,4 @@ R1 = 3;
 R2 = [SYSTEM_STATUS_TABLE + 1];
 call MOD_1;
 call MOD_5;
+ireturn;

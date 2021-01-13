@@ -21,6 +21,8 @@ if (EC == 0) then
         call MOD_2;
         [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2] = R0;
         [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 1] = "1110";
+        multipop(R0, R5, EPN, EIP);
+        multipush(R0, R5, EPN, EIP);
         R1 = 1;
         R2 = [SYSTEM_STATUS_TABLE + 1];
         call MOD_2;
@@ -31,17 +33,19 @@ if (EC == 0) then
     else 
         // code page 
         if((EPN == 4) || (EPN == 7) || (EPN == 5) || (EPN == 6)) then 
+            multipush(R0, R5, EPN, EIP);
             R1 = 5;
             R2 = [DISK_MAP_TABLE + [SYSTEM_STATUS_TABLE + 1] * 10 + EPN];
             call MOD_2;
             [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2] = R0;
             [PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + EPN * 2 + 1] = "1100";
+            multipop(R0, R5, EPN, EIP);
         endif;
     endif;
 endif;
-[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
 multipop(EIP);
 restore;
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 9] = 0;
 SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1]*16 + 13];
 SP = SP + 1;
 [[[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 14] + 2 * (SP / 512)]*512 + (SP%512)] = EIP; // set the valuee of the address to which stack pointer is to return to 

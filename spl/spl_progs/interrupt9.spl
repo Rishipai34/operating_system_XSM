@@ -79,7 +79,6 @@ call MOD_2;
 [PTBR + 8] = R0;
 [PTBR + 9] = "0110";
 multipop(R2, R4);
-breakpoint;
 
 [PTBR + 10] = -1;
 [PTBR + 11] = "0000";

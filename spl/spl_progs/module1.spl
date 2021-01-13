@@ -8,11 +8,12 @@ alias passedPID R2;
 
 if (functionNum == 1) then 
     alias counter R3;
+    counter = 0;
     while (counter < 16) do 
-        if([PROCESS_TABLE + counter * 16 + 11] == TERMINATED) then 
-            [PROCESS_TABLE + counter * 16 + 1] = 1;
+        if([PROCESS_TABLE + counter * 16 + 4] == TERMINATED) then 
+            [PROCESS_TABLE + counter * 16 + 1] = counter;
             [PROCESS_TABLE + counter * 16 + 4] = ALLOCATED;
-            [PROCESS_TABLE + counter * 16 + 14] = [PAGE_TABLE_BASE + counter * 20 ];
+            [PROCESS_TABLE + counter * 16 + 14] = PAGE_TABLE_BASE + counter * 20;
             [PROCESS_TABLE + counter * 16 + 15] = 10;
             R0 = counter;
             return;
@@ -33,6 +34,19 @@ if (functionNum == 2) then
 endif ;
 
 if (functionNum == 3) then 
+    if ([PROCESS_TABLE + passedPID * 16 + 9] != 9) then
+        alias counter R3;
+        counter = 0;
+        while (counter <= 15) do 
+            if (([PROCESS_TABLE + counter * 16 + 4] == WAIT_PROCESS) && ([PROCESS_TABLE + counter * 16 + 5] == passedPID)) then 
+                [PROCESS_TABLE + counter * 16 + 4] = READY;
+            endif;
+            if ([PROCESS_TABLE + counter * 16 + 2] == passedPID) then 
+                [PROCESS_TABLE + counter * 16 + 2] = -1;
+            endif;
+            counter = counter + 1;
+        endwhile;
+    endif;
     multipush(R1, R2);
     R1 = 2;
     R2 = passedPID ; 
@@ -44,23 +58,24 @@ if (functionNum == 3) then
     return;
 endif;
 
-if (functionNum == 4) then 
-    PTBR = PAGE_TABLE_BASE + passedPID * 20; 
-    [PTBR + 0] = -1;
-    [PTBR + 1] = "0000";
-    [PTBR + 2] = -1;
-    [PTBR + 3] = "0000";
+if (functionNum == 4) then
+    alias page_base R5;
+    page_base = PAGE_TABLE_BASE + passedPID * 20; 
+    [page_base + 0] = -1;
+    [page_base + 1] = "0000";
+    [page_base + 2] = -1;
+    [page_base + 3] = "0000";
     alias counter R3;
     counter = 4;
     while (counter <= 18) do 
-        if ([PTBR + counter] != -1) then 
-            multipush(R1, R2, R3);
+        if ([page_base + counter] != -1) then 
+            multipush(R1, R2, R3, R5);
             R1 = 2;
-            R2 = [PTBR + counter];
+            R2 = [page_base + counter];
             call MOD_2; 
-            multipop(R1, R2, R3);
-            [PTBR + counter] = -1;
-            [PTBR + counter + 1] = "0000";
+            multipop(R1, R2, R3, R5);
+            [page_base + counter] = -1;
+            [page_base + counter + 1] = "0000";
         endif;
         counter = counter + 2;
     endwhile;

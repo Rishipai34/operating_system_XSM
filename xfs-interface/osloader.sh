@@ -1,6 +1,6 @@
 ./xfs-interface load --os $HOME/myexpos/spl/spl_progs/os_startup.xsm
 ./xfs-interface load --idle $HOME/myexpos/expl/expl_progs/idle_program.xsm
-./xfs-interface load --init $HOME/myexpos/expl/expl_progs/shell_2.xsm
+./xfs-interface load --init $HOME/myexpos/expl/expl_progs/shell_3.xsm
 ./xfs-interface load --int=timer $HOME/myexpos/spl/spl_progs/timer.xsm
 ./xfs-interface load --module 7 $HOME/myexpos/spl/spl_progs/module7.xsm
 ./xfs-interface load --module 5 $HOME/myexpos/spl/spl_progs/module5.xsm
@@ -16,3 +16,5 @@
 ./xfs-interface load --module 2 $HOME/myexpos/spl/spl_progs/module2.xsm
 ./xfs-interface load --exhandler $HOME/myexpos/spl/spl_progs/exeption_handler.xsm
 ./xfs-interface load --int=8 $HOME/myexpos/spl/spl_progs/interrupt8.xsm
+./xfs-interface load --int=11 $HOME/myexpos/spl/spl_progs/interrupt11.xsm
+./xfs-interface load --int=15 $HOME/myexpos/spl/spl_progs/interrupt15.xsm

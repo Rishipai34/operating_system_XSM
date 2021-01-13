@@ -4,6 +4,7 @@ int main () {
     enddecl
     begin 
         pid = exposcall("Fork");
+        breakpoint;
         if (pid == 0) then
             temp = exposcall("Write", -2, "Parent");
             temp = exposcall("Exec", "even.xsm");

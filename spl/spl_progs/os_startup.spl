@@ -37,6 +37,17 @@ PTLR = 10;
 [PTBR+18] = -1;
 [PTBR+19] = "0000";
 
+// disk map table for idle process
+[DISK_MAP_TABLE + 0] = -1;
+[DISK_MAP_TABLE + 1] = -1;
+[DISK_MAP_TABLE + 2] = -1;
+[DISK_MAP_TABLE + 3] = -1;
+[DISK_MAP_TABLE + 4] = 69;
+[DISK_MAP_TABLE + 5] = 70;
+[DISK_MAP_TABLE + 6] = -1;
+[DISK_MAP_TABLE + 7] = -1;
+[DISK_MAP_TABLE + 8] = -1;
+[DISK_MAP_TABLE + 9] = -1;
 
 
 // for idle process
