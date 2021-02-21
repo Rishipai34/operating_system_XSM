@@ -1,0 +1,165 @@
+// the interrupt that handles file creation and deletion 
+// the system call number is to be extracted
+// create -> 1
+// delete -> 2
+alias systemcallno R1;
+alias userSP R5;
+userSP = SP;
+
+[PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 13] = SP;
+SP = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 11];
+
+
+systemcallno = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * ((userSP - 5)/512)] * 512 + (userSP - 5) % 512];
+alias filename R2;
+filename = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * ((userSP - 4) / 512)] * 512 + (userSP - 4) % 512];
+alias returnaddress R4;
+returnaddress = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * ((userSP - 1) / 512)] * 512 + (userSP - 1) % 512];
+if (systemcallno == 1) then 
+    // check whether the file is present in the system
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 1;
+    alias permissions R3;
+    permissions = [[PAGE_TABLE_BASE + [SYSTEM_STATUS_TABLE + 1] * 20 + 2 * ((userSP - 3) / 512)] * 512 + (userSP - 3) % 512];
+    alias counter R6;
+    counter = 0;
+    while (counter <= 59) do 
+        // file already exists -> do nothing
+        if ([INODE_TABLE + counter * 16 + 1] == filename) then 
+            [returnaddress] = 0;
+            [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+            SP = userSP ;
+            ireturn;
+        endif;
+        counter = counter + 1;
+    endwhile;
+
+    // file does not already exist so check the inode table for a free entry 
+    counter = 0;
+    while (counter <= 59) do 
+        if ([INODE_TABLE + counter * 16 + 1] == -1) then 
+            break;
+        endif;
+        counter = counter + 1;
+    endwhile;
+    if (counter == 60) then
+        // there are no free spaces for the entry of the file 
+        [returnaddress] = -1;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = userSP ;
+        ireturn;
+    endif;
+
+    // if none of the above conditioins are met then do the following
+    // note that counter has the inode table entry of the locatioin to store the file 
+    alias entry R7;
+    entry = INODE_TABLE + counter * 16
+    [entry + 1] = filename;
+    [entry] = DATA;
+    [entry] = 0;
+    counter = 8;
+    while(counter < 12) do 
+        [entry + counter] = -1;
+    endwhile;
+    [entry + 3] = [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 3];
+    [entry + 4] = permissions;
+    entry = ROOT_FILE + ((entry - INODE_TABLE) / 16) * 8;
+    [entry] = filename;
+    [entry + 1] = 0;
+    [entry + 2] = DATA;
+    [entry + 3] = [USER_TABLE + 2 * [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 3]];
+    [entry + 4] = permissions;
+
+    // return from the interrupt 
+    [returnaddress] = 0;
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = userSP ;
+    ireturn;
+endif;
+
+// delete system call 
+if (systemcallno == 4) then 
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 4;
+    alias counter R6;
+    counter = 0;
+    while (counter <= 60) do
+        if ([INODE_TABLE + counter * 16 + 1] == filename) then
+            break;
+        endif;
+    endwhile;
+    if (counter == 60) then 
+        [returnaddress] = 0;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+    if ([INODE_TABLE + counter * 16] != DATA) then 
+        [returnaddress] = 0;
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+    if ([INODE_TABLE + counter * 16 + 4] == EXCLUSIVE) then
+        if (([INODE_TABLE + counter * 16 + 3] != 1) && ([INODE_TABLE + counter * 16 + 3] != [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 3])) then
+            [returnaddress] = -1;
+            [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+            SP = userSP;
+        endif;
+    endif;
+
+    // call the aquire inode funtion in resource manager module
+    multipush(R1, R2, R3, R4, R5, R6, R7);
+    R1 = 4;
+    R2 = counter;
+    R3 = [SYSTEM_STATUS_TABLE + 1];
+    call MOD_0;
+    multipop(R1, R2, R3, R4, R5, R6, R7);
+    if ([FILE_STATUS_TABLE + counter * 4 + 1] != -1) then 
+        multipush(R1, R2, R3, R4, R5, R6, R7);
+        R1 = 5;
+        R2 = counter;
+        R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_0;
+        multipop(R1, R2, R3, R4, R5, R6, R7);
+        [returnaddress] = -2; // file is open and cannot be deleted
+        [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+        SP = userSP;
+        ireturn;
+    endif;
+    alias blocknum R7;
+    blocknum = 8;
+    alias buffer R8;
+    while (blocknum < 12) do 
+        if ([INODE_TABLE + counter * 16 + blocknum] != -1) then 
+            buffer = [INODE_TABLE + counter * 16 + blocknum] % MAX_BUFFER;
+            if (([BUFFER_TABLE + buffer * 4] == [INODE_TABLE + counter * 16 + blocknum]) && ([BUFFER_TABLE + buffer * 4 + 1] == 1)) then 
+                [BUFFER_TABLE + buffer * 4 + 1] = 0; // reset the dirty bit 
+            endif;
+            multipush(R1, R2, R3, R4, R5, R6, R7, R8);
+            R1 = 4;
+            R2 = [INODE_TABLE + counter * 16 + blocknum];
+            R3 = [SYSTEM_STATUS_TABLE + 1];
+            call MOD_2;
+            multipop(R1, R2, R3, R4, R5, R6, R7, R8);
+        endif;
+        blocknum = blocknum + 1;
+    endwhile;
+    // invalidate the inode table entry for this file 
+    [INODE_TABLE + counter * 16 + 1] = -1;
+    // invalidate the root file entry for this file 
+    [ROOT_FILE + counter * 8] = -1;
+    
+    // release the lock on the inode 
+    multipush(R1, R2, R3, R4, R5, R6, R7, R8);
+        R1 = 5;
+        R2 = counter;
+        R3 = [SYSTEM_STATUS_TABLE + 1];
+        call MOD_0;
+    multipop(R1, R2, R3, R4, R5, R6, R7, R8);
+    [returnaddress] = 0; // success in deleting the file 
+    [PROCESS_TABLE + [SYSTEM_STATUS_TABLE + 1] * 16 + 9] = 0;
+    SP = userSP;
+    ireturn;
+endif;
+
+SP = userSP;
+ireturn;

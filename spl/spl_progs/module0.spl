@@ -1,10 +1,12 @@
 // resource manager module 
-// funtion number = 8 -> aquire terminal 
-// funtion number = 9 -> release termial 
-// funtion number = 3 -> aquire disk 
+// function number = 8 -> aquire terminal 
+// function number = 9 -> release termial 
+// function number = 3 -> aquire disk 
+// function number = 4 -> aquire inode
+// function number = 5 -> release inode 
 alias functionNum R1;
-alias currentPID R2;
 if (functionNum == 3) then 
+    alias currentPID R2;
     while([DISK_STATUS_TABLE] == 1) do
         [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_DISK;
         multipush(R0, R1, R2, R3);
@@ -15,7 +17,49 @@ if (functionNum == 3) then
     [DISK_STATUS_TABLE + 4] = currentPID ;
     return;
 endif;
-if (functionNum == 8) then 
+
+if (functionNum == 4) then 
+    alias inodeindex R2;
+    alias passedPID R3;
+    while ([FILE_STATUS_TABLE + inodeindex * 4] != -1) do
+        [PROCESS_TABLE + passedPID * 16 + 4] = WAIT_FILE;
+        [PROCESS_TABLE + passedPID * 16 + 5] = inodeindex;
+        multipush(R1, R2, R3);
+        call MOD_5;
+        multipop(R1, R2, R3);
+    endwhile;
+    if ([INODE_TABLE + inodeindex * 16 + 1] == -1) then // inode index becomes invalid
+        R0 = -1; 
+        return;
+    endif;
+    // now lock the file by setting the file status table lock
+    [FILE_STATUS_TABLE + inodeindex * 4] = passedPID;
+    R0 = 0;
+    return;
+endif;
+
+if (functionNum == 5) then 
+    alias inodeindex R2;
+    alias passedPID R3;
+    if ([FILE_STATUS_TABLE + inodeindex * 4] != passedPID) then 
+        R0 = -1;
+        return;
+    endif;
+    [FILE_STATUS_TABLE + inodeindex * 4] = -1;
+    alias count R4;
+    count = 0;
+    while (count < 16) do
+        if (([PROCESS_TABLE + count * 16 + 4] == WAIT_FILE) && ([PROCESS_TABLE + count * 16 + 5] == inodeindex)) then 
+            [PROCESS_TABLE+ count * 16 + 4] = READY;
+        endif;
+        count = count + 1;
+    endwhile;
+    R0 = 0;
+    return;
+endif;
+
+if (functionNum == 8) then
+    alias currentPID R2;
     while ([TERMINAL_STATUS_TABLE] == 1) do
         [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_TERMINAL;
         multipush(R0, R1, R2, R3);
@@ -25,8 +69,10 @@ if (functionNum == 8) then
     [TERMINAL_STATUS_TABLE + 1] = currentPID;
     [TERMINAL_STATUS_TABLE] = 1;
     return;
-endif ;
-if (functionNum == 9) then 
+endif;
+
+if (functionNum == 9) then
+    alias currentPID R2;
     if ([TERMINAL_STATUS_TABLE + 1] != currentPID) then
         R0 = -1;
         return;

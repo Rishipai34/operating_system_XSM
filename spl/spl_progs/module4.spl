@@ -8,6 +8,22 @@ alias currentPID R2;
 alias physical_address R5;
 alias blockNum R3;
 alias pageNum R4;
+if (functionNum == 1) then 
+    multipush(R1, R2, R3, R4, R5);
+    R1 = 3;
+    R2 = currentPID;
+    call MOD_0;
+    multipop(R1, R2, R3, R4, R5);
+    [DISK_STATUS_TABLE + 1] = 1;
+    [DISK_STATUS_TABLE + 1] = pageNum;
+    [DISK_STATUS_TABLE + 2] = blockNum;
+    store(pageNum, blockNum);
+    [PROCESS_TABLE + currentPID * 16 + 4] = WAIT_DISK;
+    multipush(R1, R2, R3, R4, R5);
+    call MOD_5;
+    multipop(R1, R2, R3, R4, R5);
+    return;
+endif;
 if (functionNum == 2) then 
     multipush(R1, R2, R3, R4, R5);
     functionNum = 3 ;
